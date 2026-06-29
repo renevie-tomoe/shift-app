@@ -25,19 +25,46 @@ st.set_page_config(page_title="シフト管理", layout="wide")
 
 def show_login():
     st.title("シフト管理アプリ")
-    st.subheader("ログイン")
-    with st.form("login_form"):
-        code = st.text_input("会社コード")
-        password = st.text_input("パスワード", type="password")
-        submitted = st.form_submit_button("ログイン", use_container_width=True)
-        if submitted:
-            company = db.authenticate_company(code, password)
-            if company:
-                st.session_state.company = company
-                st.session_state.company_id = company["id"]
-                st.rerun()
-            else:
-                st.error("会社コードまたはパスワードが正しくありません")
+    tab_login, tab_signup = st.tabs(["ログイン", "新規登録"])
+
+    with tab_login:
+        with st.form("login_form"):
+            code = st.text_input("会社コード")
+            password = st.text_input("パスワード", type="password")
+            submitted = st.form_submit_button("ログイン", use_container_width=True)
+            if submitted:
+                company = db.authenticate_company(code, password)
+                if company:
+                    st.session_state.company = company
+                    st.session_state.company_id = company["id"]
+                    st.rerun()
+                else:
+                    st.error("会社コードまたはパスワードが正しくありません")
+
+    with tab_signup:
+        st.caption("はじめてご利用の方は新規登録してください")
+        with st.form("signup_form"):
+            new_name = st.text_input("会社名・店舗名")
+            new_code = st.text_input("会社コード（ログイン時に使用）")
+            new_pass = st.text_input("パスワード", type="password")
+            new_pass2 = st.text_input("パスワード（確認）", type="password")
+            submitted = st.form_submit_button("登録する", use_container_width=True)
+            if submitted:
+                if not new_name or not new_code or not new_pass:
+                    st.error("すべての項目を入力してください")
+                elif new_pass != new_pass2:
+                    st.error("パスワードが一致しません")
+                elif len(new_pass) < 8:
+                    st.error("パスワードは8文字以上にしてください")
+                else:
+                    company = db.register_company(new_code, new_name, new_pass)
+                    if company:
+                        st.session_state.company = company
+                        st.session_state.company_id = company["id"]
+                        st.success("登録完了！ログインしました")
+                        st.rerun()
+                    else:
+                        st.error("この会社コードはすでに使われています")
 
 
 if "company" not in st.session_state:

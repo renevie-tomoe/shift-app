@@ -34,6 +34,23 @@ def authenticate_company(code: str, password: str) -> dict | None:
     return None
 
 
+# ---- 会社登録 ----
+
+def register_company(code: str, name: str, password: str) -> dict | None:
+    """新規会社を登録。成功したら会社情報を返す。コード重複時はNone。"""
+    sb = get_client()
+    res = sb.table("companies").select("id").eq("code", code).execute()
+    if res.data:
+        return None
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    res = sb.table("companies").insert({
+        "code": code,
+        "name": name,
+        "password_hash": password_hash,
+    }).execute()
+    return res.data[0] if res.data else None
+
+
 # ---- 従業員 ----
 
 def load_employees(company_id: str) -> list:
