@@ -18,6 +18,20 @@ FIXED_DAYS = {"店長": 22, "マネージャー": 22, "ロングパート": 22, 
 
 st.set_page_config(page_title="シフト管理", layout="wide")
 
+st.markdown("""
+<style>
+button[kind="primaryFormSubmit"], button[kind="primary"] {
+    background-color: #AFDDE7 !important;
+    border-color: #AFDDE7 !important;
+    color: #000000 !important;
+}
+button[kind="primaryFormSubmit"]:hover, button[kind="primary"]:hover {
+    background-color: #8ecfdb !important;
+    border-color: #8ecfdb !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # =============================================================================
 # ログイン画面
