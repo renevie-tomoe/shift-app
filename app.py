@@ -20,14 +20,17 @@ st.set_page_config(page_title="シフト管理", layout="wide")
 
 st.markdown("""
 <style>
-button[kind="primaryFormSubmit"], button[kind="primary"] {
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
     background-color: #AFDDE7 !important;
     border-color: #AFDDE7 !important;
     color: #000000 !important;
 }
-button[kind="primaryFormSubmit"]:hover, button[kind="primary"]:hover {
+.stButton > button[kind="primary"]:hover,
+.stFormSubmitButton > button:hover {
     background-color: #8ecfdb !important;
     border-color: #8ecfdb !important;
+    color: #000000 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -62,20 +65,31 @@ def show_login():
     else:
         st.subheader("新規登録")
         with st.form("signup_form"):
-            new_name = st.text_input("会社名・店舗名")
-            new_code = st.text_input("会社コード（ログイン時に使用）")
-            new_pass = st.text_input("パスワード", type="password")
-            new_pass2 = st.text_input("パスワード（確認）", type="password")
+            new_name = st.text_input("会社名・組織名 ※必須")
+            new_branch = st.text_input("店舗名・部署名（任意）")
+            st.caption("会社コード：半角英数字・記号を含む6文字以上")
+            new_code = st.text_input("会社コード ※必須")
+            st.caption("パスワード：半角英数字・記号を含む8文字以上")
+            new_pass = st.text_input("パスワード ※必須", type="password")
+            new_pass2 = st.text_input("パスワード（確認） ※必須", type="password")
             submitted = st.form_submit_button("登録する", use_container_width=True)
             if submitted:
+                import re
                 if not new_name or not new_code or not new_pass:
-                    st.error("すべての項目を入力してください")
-                elif new_pass != new_pass2:
-                    st.error("パスワードが一致しません")
+                    st.error("必須項目をすべて入力してください")
+                elif len(new_code) < 6:
+                    st.error("会社コードは6文字以上にしてください")
+                elif not re.search(r'[a-zA-Z]', new_code) or not re.search(r'[0-9]', new_code):
+                    st.error("会社コードは英字と数字を両方含めてください")
                 elif len(new_pass) < 8:
                     st.error("パスワードは8文字以上にしてください")
+                elif not re.search(r'[a-zA-Z]', new_pass) or not re.search(r'[0-9]', new_pass):
+                    st.error("パスワードは英字と数字を両方含めてください")
+                elif new_pass != new_pass2:
+                    st.error("パスワードが一致しません")
                 else:
-                    company = db.register_company(new_code, new_name, new_pass)
+                    display_name = f"{new_name}　{new_branch}".strip() if new_branch else new_name
+                    company = db.register_company(new_code, display_name, new_pass)
                     if company:
                         st.session_state.company = company
                         st.session_state.company_id = company["id"]
