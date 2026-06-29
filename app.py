@@ -25,9 +25,11 @@ st.set_page_config(page_title="シフト管理", layout="wide")
 
 def show_login():
     st.title("シフト管理アプリ")
-    tab_login, tab_signup = st.tabs(["ログイン", "新規登録"])
 
-    with tab_login:
+    if "show_signup" not in st.session_state:
+        st.session_state.show_signup = False
+
+    if not st.session_state.show_signup:
         with st.form("login_form"):
             code = st.text_input("会社コード")
             password = st.text_input("パスワード", type="password")
@@ -40,9 +42,11 @@ def show_login():
                     st.rerun()
                 else:
                     st.error("会社コードまたはパスワードが正しくありません")
-
-    with tab_signup:
-        st.caption("はじめてご利用の方は新規登録してください")
+        if st.button("新規登録はこちら", use_container_width=True, type="secondary"):
+            st.session_state.show_signup = True
+            st.rerun()
+    else:
+        st.subheader("新規登録")
         with st.form("signup_form"):
             new_name = st.text_input("会社名・店舗名")
             new_code = st.text_input("会社コード（ログイン時に使用）")
@@ -61,10 +65,13 @@ def show_login():
                     if company:
                         st.session_state.company = company
                         st.session_state.company_id = company["id"]
-                        st.success("登録完了！ログインしました")
+                        st.session_state.show_signup = False
                         st.rerun()
                     else:
                         st.error("この会社コードはすでに使われています")
+        if st.button("← ログインに戻る", type="secondary"):
+            st.session_state.show_signup = False
+            st.rerun()
 
 
 if "company" not in st.session_state:
