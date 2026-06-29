@@ -105,15 +105,17 @@ def generate_shift(year: int, month: int, employees: list, monthly_requests: dic
         for d in days[:-6]:
             prob += lpSum(x[name][dd] for dd in range(d, d + 7)) <= 6
 
-    # 各日: 店長・マネージャーのうち最低2人が出勤
+    # 各日: 店長・マネージャーのうち最低1人が出勤（2人以上いれば2人）
     senior_names = [e["name"] for e in employees if e["role"] in ("店長", "マネージャー")]
+    min_seniors = min(len(senior_names), 2) if len(senior_names) >= 2 else min(len(senior_names), 1)
     for d in days:
-        if len(senior_names) >= 2:
-            prob += lpSum(x[name][d] for name in senior_names) >= 2
+        if senior_names:
+            prob += lpSum(x[name][d] for name in senior_names) >= min_seniors
 
-    # 各日の最低出勤人数（全体で最低3人）
+    # 各日の最低出勤人数（従業員数の約半数、最低1人）
+    min_daily = max(1, min(3, len(emp_names) // 2))
     for d in days:
-        prob += lpSum(x[name][d] for name in emp_names) >= 3
+        prob += lpSum(x[name][d] for name in emp_names) >= min_daily
 
     # ---- 目的関数: 希望休み曜日に出勤させる回数を最小化 ----
     penalty_terms = []
